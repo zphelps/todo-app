@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { arrayMove } from '@dnd-kit/sortable';
 import { Todo } from '../types/todo';
 
 const STORAGE_KEY = 'jarvis-todos';
@@ -60,5 +61,14 @@ export function useTodos() {
     setTodos(prev => prev.filter(todo => !todo.completed));
   };
 
-  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted };
+  const reorderTodos = (activeId: string, overId: string) => {
+    setTodos(prev => {
+      const oldIndex = prev.findIndex(t => t.id === activeId);
+      const newIndex = prev.findIndex(t => t.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted, reorderTodos };
 }
