@@ -1,18 +1,40 @@
-import { Todo, FilterType } from '../types/todo';
+import { Todo, FilterType, Category } from '../types/todo';
 import { TodoItem } from './TodoItem';
 
 interface TodoListProps {
   todos: Todo[];
   filter: FilterType;
+  categories: Category[];
+  selectedCategoryId: string | null;
+  selectedSubCategoryId: string | null;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, text: string) => void;
 }
 
-export function TodoList({ todos, filter, onToggle, onDelete, onEdit }: TodoListProps) {
+export function TodoList({
+  todos,
+  filter,
+  categories,
+  selectedCategoryId,
+  selectedSubCategoryId,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TodoListProps) {
   const filtered = todos.filter(todo => {
-    if (filter === 'active') return !todo.completed;
-    if (filter === 'completed') return todo.completed;
+    // Completion filter
+    if (filter === 'active' && todo.completed) return false;
+    if (filter === 'completed' && !todo.completed) return false;
+
+    // Category filter
+    if (selectedCategoryId !== null) {
+      if (todo.categoryId !== selectedCategoryId) return false;
+      if (selectedSubCategoryId !== null && todo.subCategoryId !== selectedSubCategoryId) {
+        return false;
+      }
+    }
+
     return true;
   });
 
@@ -35,6 +57,7 @@ export function TodoList({ todos, filter, onToggle, onDelete, onEdit }: TodoList
         <TodoItem
           key={todo.id}
           todo={todo}
+          categories={categories}
           onToggle={onToggle}
           onDelete={onDelete}
           onEdit={onEdit}
