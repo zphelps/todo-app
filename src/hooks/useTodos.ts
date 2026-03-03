@@ -19,7 +19,7 @@ export function useTodos() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
   }, [todos]);
 
-  const addTodo = (text: string) => {
+  const addTodo = (text: string, categoryId?: string, subCategoryId?: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setTodos(prev => [
@@ -28,6 +28,8 @@ export function useTodos() {
         text: trimmed,
         completed: false,
         createdAt: Date.now(),
+        categoryId: categoryId || undefined,
+        subCategoryId: subCategoryId || undefined,
       },
       ...prev,
     ]);
@@ -60,5 +62,36 @@ export function useTodos() {
     setTodos(prev => prev.filter(todo => !todo.completed));
   };
 
-  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted };
+  /** Clear categoryId (and subCategoryId) from todos that belong to the given category */
+  const unassignCategory = (categoryId: string) => {
+    setTodos(prev =>
+      prev.map(todo =>
+        todo.categoryId === categoryId
+          ? { ...todo, categoryId: undefined, subCategoryId: undefined }
+          : todo
+      )
+    );
+  };
+
+  /** Clear subCategoryId from todos that belong to the given sub-category */
+  const unassignSubCategory = (subCategoryId: string) => {
+    setTodos(prev =>
+      prev.map(todo =>
+        todo.subCategoryId === subCategoryId
+          ? { ...todo, subCategoryId: undefined }
+          : todo
+      )
+    );
+  };
+
+  return {
+    todos,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    editTodo,
+    clearCompleted,
+    unassignCategory,
+    unassignSubCategory,
+  };
 }

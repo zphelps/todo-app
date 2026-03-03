@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Todo } from '../types/todo';
+import { Todo, Category } from '../types/todo';
 
 interface TodoItemProps {
   todo: Todo;
+  categories: Category[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, text: string) => void;
 }
 
-export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+export function TodoItem({ todo, categories, onToggle, onDelete, onEdit }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.text);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +41,15 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
     if (e.key === 'Escape') cancelEdit();
   };
 
+  // Resolve category / sub-category labels
+  const category = todo.categoryId
+    ? categories.find(c => c.id === todo.categoryId)
+    : null;
+  const subCategory =
+    category && todo.subCategoryId
+      ? category.subCategories.find(sc => sc.id === todo.subCategoryId)
+      : null;
+
   return (
     <div className="group flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50/60 transition-colors duration-150">
       {/* Checkbox */}
@@ -59,7 +69,7 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
         )}
       </button>
 
-      {/* Text / Edit input */}
+      {/* Text / Edit input + badge */}
       <div className="flex-1 min-w-0">
         {editing ? (
           <input
@@ -72,17 +82,36 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
             className="w-full text-base text-gray-700 bg-white border border-indigo-400 rounded-md px-2 py-0.5 outline-none ring-2 ring-indigo-100"
           />
         ) : (
-          <span
-            onDoubleClick={startEdit}
-            className={`block text-base select-none cursor-text transition-all duration-200 truncate ${
-              todo.completed
-                ? 'line-through text-gray-400'
-                : 'text-gray-700'
-            }`}
-            title="Double-click to edit"
-          >
-            {todo.text}
-          </span>
+          <>
+            <span
+              onDoubleClick={startEdit}
+              className={`block text-base select-none cursor-text transition-all duration-200 truncate ${
+                todo.completed
+                  ? 'line-through text-gray-400'
+                  : 'text-gray-700'
+              }`}
+              title="Double-click to edit"
+            >
+              {todo.text}
+            </span>
+
+            {/* Category badge */}
+            {category && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 font-medium">
+                  {category.name}
+                </span>
+                {subCategory && (
+                  <>
+                    <span className="text-gray-300 text-xs">›</span>
+                    <span className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-100 font-medium">
+                      {subCategory.name}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
