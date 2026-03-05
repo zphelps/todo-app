@@ -1,12 +1,17 @@
 import {
   DndContext,
   closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
@@ -16,6 +21,7 @@ import {
 import { useState } from 'react';
 import { Todo, FilterType } from '../types/todo';
 import { TodoItem } from './TodoItem';
+import { GripIcon } from './GripIcon';
 
 interface TodoListProps {
   todos: Todo[];
@@ -28,6 +34,14 @@ interface TodoListProps {
 
 export function TodoList({ todos, filter, onToggle, onDelete, onEdit, onReorder }: TodoListProps) {
   const [activeTodo, setActiveTodo] = useState<Todo | null>(null);
+  const isDragDisabled = filter !== 'all';
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const filtered = todos.filter(todo => {
     if (filter === 'active') return !todo.completed;
@@ -63,6 +77,7 @@ export function TodoList({ todos, filter, onToggle, onDelete, onEdit, onReorder 
 
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={[restrictToVerticalAxis, restrictToParentElement]}
       onDragStart={handleDragStart}
@@ -77,6 +92,7 @@ export function TodoList({ todos, filter, onToggle, onDelete, onEdit, onReorder 
               onToggle={onToggle}
               onDelete={onDelete}
               onEdit={onEdit}
+              dragDisabled={isDragDisabled}
             />
           ))}
         </div>
@@ -86,14 +102,7 @@ export function TodoList({ todos, filter, onToggle, onDelete, onEdit, onReorder 
         {activeTodo ? (
           <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-xl shadow-indigo-100/60 border border-gray-200 scale-[1.02] opacity-95">
             {/* Grip icon */}
-            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
-              <circle cx="5" cy="4" r="1.2" />
-              <circle cx="11" cy="4" r="1.2" />
-              <circle cx="5" cy="8" r="1.2" />
-              <circle cx="11" cy="8" r="1.2" />
-              <circle cx="5" cy="12" r="1.2" />
-              <circle cx="11" cy="12" r="1.2" />
-            </svg>
+            <GripIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
             {/* Checkbox indicator */}
             <div
               className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${

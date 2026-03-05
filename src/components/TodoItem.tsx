@@ -2,15 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Todo } from '../types/todo';
+import { GripIcon } from './GripIcon';
 
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, text: string) => void;
+  dragDisabled?: boolean;
 }
 
-export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete, onEdit, dragDisabled = false }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.text);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +24,7 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: todo.id });
+  } = useSortable({ id: todo.id, disabled: dragDisabled });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -67,28 +69,19 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
       }`}
     >
       {/* Drag handle */}
-      <button
-        {...attributes}
-        {...listeners}
-        className={`flex-shrink-0 text-gray-300 group-hover:text-gray-400 hover:!text-gray-500 transition-colors duration-150 focus:outline-none ${
-          isDragging ? 'cursor-grabbing' : 'cursor-grab'
-        }`}
-        aria-label="Drag to reorder"
-        tabIndex={0}
-      >
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 16 16"
-          fill="currentColor"
+      {!dragDisabled && (
+        <button
+          {...attributes}
+          {...listeners}
+          className={`flex-shrink-0 text-gray-300 group-hover:text-gray-400 hover:!text-gray-500 transition-colors duration-150 focus:outline-none ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          aria-label="Drag to reorder"
+          tabIndex={0}
         >
-          <circle cx="5" cy="4" r="1.2" />
-          <circle cx="11" cy="4" r="1.2" />
-          <circle cx="5" cy="8" r="1.2" />
-          <circle cx="11" cy="8" r="1.2" />
-          <circle cx="5" cy="12" r="1.2" />
-          <circle cx="11" cy="12" r="1.2" />
-        </svg>
-      </button>
+          <GripIcon />
+        </button>
+      )}
 
       {/* Checkbox */}
       <button
