@@ -7,7 +7,7 @@ import { TodoFilter } from './components/TodoFilter';
 
 export default function App() {
   const [filter, setFilter] = useState<FilterType>('all');
-  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted } = useTodos();
+  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted, reorderTodos } = useTodos();
 
   const activeCount = todos.filter(t => !t.completed).length;
   const completedCount = todos.filter(t => t.completed).length;
@@ -35,6 +35,7 @@ export default function App() {
             onToggle={toggleTodo}
             onDelete={deleteTodo}
             onEdit={editTodo}
+            onReorder={reorderTodos}
           />
 
           {/* Footer / filter bar */}
@@ -51,7 +52,7 @@ export default function App() {
 
         {/* Hint */}
         <p className="mt-4 text-center text-xs text-gray-400">
-          Double-click a todo to edit it
+          Double-click to edit · Drag ⠿ to reorder
         </p>
       </div>
     </div>

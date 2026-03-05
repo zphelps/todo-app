@@ -1,17 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Todo } from '../types/todo';
+import { GripIcon } from './GripIcon';
 
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, text: string) => void;
+  dragDisabled?: boolean;
 }
 
-export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete, onEdit, dragDisabled = false }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.text);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: todo.id, disabled: dragDisabled });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   useEffect(() => {
     if (editing) {
@@ -41,7 +59,30 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
   };
 
   return (
-    <div className="group flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50/60 transition-colors duration-150">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-3 px-4 py-3 border-b border-gray-100 transition-all duration-150 ${
+        isDragging
+          ? 'shadow-lg scale-[1.02] opacity-90 bg-white z-50 relative rounded-xl border-gray-200'
+          : 'hover:bg-gray-50/60'
+      }`}
+    >
+      {/* Drag handle */}
+      {!dragDisabled && (
+        <button
+          {...attributes}
+          {...listeners}
+          className={`flex-shrink-0 text-gray-300 group-hover:text-gray-400 hover:!text-gray-500 transition-colors duration-150 focus:outline-none ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          aria-label="Drag to reorder"
+          tabIndex={0}
+        >
+          <GripIcon />
+        </button>
+      )}
+
       {/* Checkbox */}
       <button
         onClick={() => onToggle(todo.id)}
